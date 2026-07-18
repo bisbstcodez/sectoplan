@@ -30,6 +30,9 @@
     --bezel:#0f141a; --bezel-edge:#2b333d; --spoke:#151c23; --ring-guide:#131920;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  /* iOS Safari gives <button> a native appearance that ignores flex
+     centering and clips text; strip it everywhere so our styles apply. */
+  button{-webkit-appearance:none;appearance:none}
   html,body{margin:0;padding:0}
   body{
     background:var(--bg);color:var(--text);
@@ -280,6 +283,7 @@
     flex:1 1 0;min-width:0;padding:12px 8px;border-radius:10px;border:0;
     font-size:15px;font-weight:600;line-height:1.4;cursor:pointer;font-family:inherit;
     display:flex;align-items:center;justify-content:center;
+    -webkit-box-align:center;-webkit-box-pack:center;
   }
   /* clip only when buttons sit side by side (edit sheet); a vertical stack
      has room for full labels and must not shave glyph tops/bottoms */
