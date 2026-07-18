@@ -41,6 +41,13 @@
     font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.6px;
     text-transform:uppercase;padding:0 16px 8px;
   }
+  .addinline{
+    width:34px;height:34px;border-radius:50%;border:0;cursor:pointer;flex:none;
+    background:var(--accent);color:#fff;font-size:21px;line-height:1;
+    display:grid;place-items:center;padding:0;
+  }
+  .addinline:hover{filter:brightness(1.1)}
+  .addinline:active{transform:scale(.94)}
 
   /* ---- MID (iPad portrait, 700-1059): still one column, but the dial and
      month get real room instead of sitting in a 520px phone strip.
@@ -52,9 +59,9 @@
     .fab{right:max(24px, calc((100vw - 760px)/2 + 24px))}
   }
 
-  /* ---- WIDE: dial + month in the left column, activities on the right ----
-     1060px is where two columns still leave the dial bigger than the
-     one-column tablet layout: landscape on every iPad, and any laptop. */
+  /* ---- WIDE: dial on the left; month + activities stacked on the right.
+     The right pane is a fixed-height flex column: the calendar takes at most
+     half the window, and the list scrolls in whatever is left. ---- */
   @media(min-width:1060px){
     .wrap{max-width:1180px;padding-bottom:40px}
     .panes{
@@ -64,18 +71,35 @@
     }
     .pane-right{
       position:sticky;top:76px;
-      background:var(--panel);border:1px solid var(--line);border-radius:16px;
-      padding:14px 0 6px;max-height:calc(100vh - 104px);overflow-y:auto;
+      height:calc(100vh - 104px);
+      display:flex;flex-direction:column;gap:14px;min-height:0;
     }
-    .panehead{padding:0 16px 10px}
-    .dialwrap{padding:0 0 18px}
-    /* month sits under the dial, both visible at once */
-    .cal{padding:4px 0 8px}
-    .calfoot{padding:10px 4px 0}
-    .list{margin-top:0}
+    #monthView{
+      flex:0 0 auto;max-height:50vh;overflow:hidden;
+      background:var(--panel);border:1px solid var(--line);border-radius:16px;
+      padding:12px 12px 10px;display:flex;flex-direction:column;min-height:0;
+    }
+    #monthView .cal{padding:0;flex:1 1 auto;min-height:0;overflow:hidden}
+    #monthView .calfoot{flex:0 0 auto;padding:8px 2px 0}
+    /* the day rings shrink to fit rather than overflowing the card */
+    #monthView .calgrid{min-height:0}
+
+    .listwrap{
+      flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
+      background:var(--panel);border:1px solid var(--line);border-radius:16px;
+      padding:14px 0 0;overflow:hidden;
+    }
+    .panehead{
+      flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+      padding:0 14px 10px;
+    }
+    /* the list is the only thing that scrolls */
+    .listwrap .list{flex:1 1 auto;min-height:0;overflow-y:auto;margin-top:0}
     .empty{border-top:0}
-    /* the dial has room to breathe now */
+    .dialwrap{padding:0 0 18px}
     svg.dial{max-width:640px;margin:0 auto}
+    /* the + moves into the pane header, so the floating one goes away */
+    .fab{display:none}
   }
   @media(min-width:1280px){
     .wrap{max-width:1320px}
@@ -191,8 +215,22 @@
   .sheet h2{margin:0 0 16px;font-size:17px;font-weight:600}
   label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;font-weight:500}
   input[type=text],input[type=time],input[type=number],input[type=password],input[type=date],select,textarea{
-    width:100%;min-width:0;background:var(--panel-2);border:1px solid var(--line);color:var(--text);
+    width:100%;min-width:0;max-width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text);
     border-radius:10px;padding:11px 10px;font-size:15px;font-family:inherit;
+  }
+  /* Safari gives date/time inputs an intrinsic min-content width from their
+     native picker chrome, which ignores width:100% and forces the whole sheet
+     wider than the viewport. Stripping the appearance lets them shrink. */
+  input[type=date],input[type=time]{
+    -webkit-appearance:none;appearance:none;
+    min-width:0;max-width:100%;box-sizing:border-box;
+  }
+  input[type=date]::-webkit-date-and-time-value{
+    text-align:left;margin:0;min-width:0;
+  }
+  input[type=date]::-webkit-calendar-picker-indicator,
+  input[type=time]::-webkit-calendar-picker-indicator{
+    margin-left:0;padding:0;opacity:.55;
   }
   textarea{resize:vertical;min-height:56px;line-height:1.45}
   input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
@@ -213,13 +251,20 @@
     .grid3{grid-template-columns:1fr 1fr}
     .grid3 .field.opt{grid-column:1 / -1}
   }
-  /* 6 x 2 — fits an iPhone without wrapping raggedly, reads as a spectrum */
+  /* 6 x 2 — the circle is drawn ~15% smaller than the cell, but the button
+     keeps its full size so the tap target stays above Apple's 44px minimum. */
   .swatches{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
   .sw{
-    aspect-ratio:1;width:100%;height:auto;border-radius:50%;border:2px solid transparent;
-    cursor:pointer;padding:0;min-width:0;transition:transform .1s;
+    aspect-ratio:1;width:100%;height:auto;border:0;background:none;padding:0;
+    cursor:pointer;min-width:0;display:grid;place-items:center;
   }
-  .sw[aria-checked=true]{border-color:#fff;transform:scale(1.12)}
+  .sw i{
+    display:block;width:82%;height:82%;border-radius:50%;
+    background:var(--c);border:2px solid transparent;
+    transition:transform .1s,border-color .1s;
+  }
+  .sw[aria-checked=true] i{border-color:#fff;transform:scale(1.1)}
+  .sw:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:50%}
   .actions{display:flex;gap:8px;margin-top:20px}
   .btn{
     flex:1 1 0;min-width:0;padding:12px 8px;border-radius:10px;border:0;
@@ -236,8 +281,9 @@
   code{background:var(--panel-2);padding:1px 5px;border-radius:4px;font-size:12px}
   .fieldset{
     border:1px solid var(--line);border-radius:12px;padding:14px 12px;margin-bottom:14px;
-    min-width:0;
+    min-width:0;max-width:100%;overflow:hidden;
   }
+  .fieldset > *{min-width:0;max-width:100%}
   .fieldset legend{padding:0 6px;font-size:12px;color:var(--muted);font-weight:600}
   .freqs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
   .chip{
@@ -250,7 +296,11 @@
   .radioline input[type=radio]{accent-color:var(--accent);width:17px;height:17px;flex:none;margin:0}
   .radioline label{margin:0;color:var(--text);font-size:14px;font-weight:400;white-space:nowrap}
   .radioline input[type=number]{width:72px;flex:none}
-  .radioline input[type=date]{flex:1 1 130px;min-width:0}
+  .radioline input[type=date]{flex:1 1 110px;min-width:0;max-width:100%}
+  /* Below ~380px the End-by row runs out of room; let the date take its own line */
+  @media(max-width:379px){
+    .radioline input[type=date]{flex:1 0 100%;margin-top:2px}
+  }
   .inline{display:flex;align-items:center;gap:9px;font-size:14px;flex-wrap:wrap}
   .inline input[type=number]{width:66px;flex:none}
   .dows{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}
@@ -277,13 +327,17 @@
   </div>
   <div class="status" id="status"></div>
   <div class="panes">
-    <!-- LEFT: dial, and on wide screens the month grid below it -->
+    <!-- LEFT: the dial -->
     <div class="pane-left">
       <div id="dayView">
         <div class="dialwrap">
           <svg class="dial" id="dial" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
       </div>
+    </div>
+
+    <!-- RIGHT: month calendar on top, activities scrolling beneath -->
+    <div class="pane-right">
       <div id="monthView" hidden>
         <div class="cal">
           <div class="calhead" id="calHead"></div>
@@ -294,12 +348,13 @@
           <span><b id="mDays">-</b> days with activities</span>
         </div>
       </div>
-    </div>
-
-    <!-- RIGHT: the day's activities -->
-    <div class="pane-right">
-      <div class="panehead" id="listHead" hidden>Activities</div>
-      <div class="list" id="list"></div>
+      <div class="listwrap">
+        <div class="panehead" id="listHead" hidden>
+          <span>Activities</span>
+          <button class="addinline" id="addInline" aria-label="Add activity" title="Add activity">+</button>
+        </div>
+        <div class="list" id="list"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -937,7 +992,7 @@ function buildSwatches(){
   var box=document.getElementById("fColors");
   box.innerHTML = PALETTE.map(function(c){
     return '<button class="sw" role="radio" aria-checked="false" data-hex="'+c.hex+
-           '" style="background:'+c.hex+'" title="'+c.name+'" aria-label="'+c.name+'"></button>';
+           '" style="--c:'+c.hex+'" title="'+c.name+'" aria-label="'+c.name+'"><i></i></button>';
   }).join("");
   box.addEventListener("click",function(e){
     var b=e.target.closest(".sw"); if(!b) return;
@@ -1146,6 +1201,7 @@ function init(){
     render();
   };
   document.getElementById("addBtn").onclick=function(){ openEvent(null); };
+  document.getElementById("addInline").onclick=function(){ openEvent(null); };
   document.getElementById("syncBtn").onclick=function(){ pull(); };
   document.getElementById("calGrid").addEventListener("click",function(e){
     var c=e.target.closest(".cell"); if(!c) return;
