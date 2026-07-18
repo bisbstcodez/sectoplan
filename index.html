@@ -278,9 +278,15 @@
   .actions{display:flex;gap:8px;margin-top:20px}
   .btn{
     flex:1 1 0;min-width:0;padding:12px 8px;border-radius:10px;border:0;
-    font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;
+    font-size:15px;font-weight:600;line-height:1.4;cursor:pointer;font-family:inherit;
+    display:flex;align-items:center;justify-content:center;
+  }
+  /* clip only when buttons sit side by side (edit sheet); a vertical stack
+     has room for full labels and must not shave glyph tops/bottoms */
+  .actions:not([style*="column"]) .btn{
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
+  .actions[style*="column"] .btn{min-height:46px}
   .btn.primary{background:var(--accent);color:#fff}
   .btn.ghost{background:var(--panel-2);color:var(--text)}
   .btn.danger{background:rgba(232,50,74,.14);color:#ff6b7e;flex:0 1 auto;padding:12px 14px}
