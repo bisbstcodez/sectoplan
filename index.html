@@ -127,6 +127,8 @@
   svg.dial{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
   .tick{stroke:#454f5b;stroke-width:1.2;stroke-linecap:round}
   .tick.major{stroke:#9aa7b4;stroke-width:2}
+  .tick.major.t2{stroke:#b3bec9;stroke-width:2.2}
+  .tick.major.t1{stroke:#d4dde6;stroke-width:2.6}
   .hournum{fill:#cdd7e1;font-size:13px;font-weight:600;text-anchor:middle;dominant-baseline:central}
   .hournum.q{fill:#f2f6fa;font-size:15px;font-weight:700}
   .sector{cursor:grab}
@@ -663,12 +665,30 @@ function renderDial(){
   var evs=eventsFor(state.viewDate), s=[];
   s.push('<circle cx="200" cy="200" r="'+R_OUTER+'" fill="var(--bezel)" stroke="var(--bezel-edge)" stroke-width="1"/>');
   for(var i=0;i<96;i++){
-    var ang=i*(360/96)-90, major=i%4===0;
-    var o=polar(major?R_TICK_OUT+4:R_TICK_OUT,ang), n=polar(major?R_TICK_IN:R_TICK_IN+5,ang);
-    s.push('<line class="tick'+(major?' major':'')+'" x1="'+o[0].toFixed(1)+'" y1="'+o[1].toFixed(1)+
+    var ang=i*(360/96)-90;
+    var hr = i/4;                        // whole number on hour ticks
+    var isHour = (i%4===0);
+    var inner, cls;
+    if(!isHour){
+      // quarter-hour lines — unchanged
+      inner = R_TICK_IN+5; cls = "tick";
+    } else if(hr%6===0){
+      // 0, 6, 12, 18 — longest
+      inner = 152; cls = "tick major t1";
+    } else if(hr%3===0){
+      // 3, 9, 15, 21 — medium, shorter than the quarter-day marks
+      inner = 155; cls = "tick major t2";
+    } else {
+      // every other hour — current length
+      inner = R_TICK_IN; cls = "tick major";
+    }
+    var outR = isHour ? R_TICK_OUT+4 : R_TICK_OUT;
+    var o=polar(outR,ang), n=polar(inner,ang);
+    s.push('<line class="'+cls+'" x1="'+o[0].toFixed(1)+'" y1="'+o[1].toFixed(1)+
            '" x2="'+n[0].toFixed(1)+'" y2="'+n[1].toFixed(1)+'"/>');
   }
-  for(var h=0;h<24;h++){
+  // numerals only at the eight principal hours
+  for(var h=0;h<24;h+=3){
     var a=h*15-90, pn=polar(R_NUM,a);
     s.push('<text class="hournum'+(h%6===0?' q':'')+'" x="'+pn[0].toFixed(1)+'" y="'+pn[1].toFixed(1)+'">'+h+'</text>');
   }
