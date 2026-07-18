@@ -13,6 +13,9 @@
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <meta name="apple-mobile-web-app-title" content="Sectograph">
 <meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rationale&display=swap" rel="stylesheet">
 <style>
   :root{
     /* Depth ladder — each surface is measurably lighter than the one behind it:
@@ -129,8 +132,12 @@
   .tick.major{stroke:#9aa7b4;stroke-width:2}
   .tick.major.t2{stroke:#b3bec9;stroke-width:2.2}
   .tick.major.t1{stroke:#d4dde6;stroke-width:2.6}
-  .hournum{fill:#cdd7e1;font-size:13px;font-weight:600;text-anchor:middle;dominant-baseline:central}
-  .hournum.q{fill:#f2f6fa;font-size:15px;font-weight:700}
+  .hournum{
+    font-family:"Rationale",ui-sans-serif,sans-serif;
+    fill:#cdd7e1;font-size:16px;font-weight:400;letter-spacing:.5px;
+    text-anchor:middle;dominant-baseline:central;
+  }
+  .hournum.q{fill:#f2f6fa;font-size:18px;font-weight:400}
   .sector{cursor:grab}
   .sector.dragging{cursor:grabbing}
   .sector .body{transition:fill-opacity .12s}
@@ -513,7 +520,7 @@ var PALETTE = [
   {name:"Slate",  hex:"#7b8b9a"}
 ];
 var CX=200, CY=200;
-var R_OUTER=192, R_NUM=178, R_TICK_OUT=166, R_TICK_IN=158;
+var R_OUTER=192, R_NUM=183, R_TICK_OUT=166, R_TICK_IN=158;
 var R_FACE=152, R_HUB=50;
 var SNAP=5, MIN_DUR=5, DAY=1440;
 var RINGS = [ {in:118,out:150}, {in:86,out:114}, {in:56,out:82} ];
