@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#101418">
+<meta name="theme-color" content="#161b21">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Sectograph</title>
@@ -15,9 +15,16 @@
 <meta name="mobile-web-app-capable" content="yes">
 <style>
   :root{
-    --bg:#101418; --panel:#171c22; --panel-2:#1e242b; --dial:#0a0d10;
-    --line:#2a323b; --text:#e8edf2; --muted:#8b97a4; --accent:#22a7e0; --now:#e8324a;
-    --track:#252d36;
+    /* Depth ladder — each surface is measurably lighter than the one behind it:
+       dial (deepest) < page background < sheet < inputs inside the sheet */
+    --dial:#080b0e;
+    --bg:#161b21;
+    --panel:#232b34;
+    --panel-2:#2e3742;
+    --line:#3a4450; --text:#e8edf2; --muted:#9aa7b4; --accent:#22a7e0; --now:#e8324a;
+    --track:#2b343e;
+    /* dial internals */
+    --bezel:#0f141a; --bezel-edge:#2b333d; --spoke:#151c23; --ring-guide:#131920;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
@@ -28,6 +35,52 @@
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
   .wrap{max-width:520px;margin:0 auto;padding:0 0 96px}
+  .panes{display:block}
+  .pane-left,.pane-right{min-width:0}
+  .panehead{
+    font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.6px;
+    text-transform:uppercase;padding:0 16px 8px;
+  }
+
+  /* ---- MID (iPad portrait, 700-1059): still one column, but the dial and
+     month get real room instead of sitting in a 520px phone strip.
+     Two columns below ~1060 would squeeze the dial smaller than this. ---- */
+  @media(min-width:700px) and (max-width:1059px){
+    .wrap{max-width:760px;padding-bottom:110px}
+    .panes{padding:0 12px}
+    svg.dial{max-width:640px;margin:0 auto}
+    .fab{right:max(24px, calc((100vw - 760px)/2 + 24px))}
+  }
+
+  /* ---- WIDE: dial + month in the left column, activities on the right ----
+     1060px is where two columns still leave the dial bigger than the
+     one-column tablet layout: landscape on every iPad, and any laptop. */
+  @media(min-width:1060px){
+    .wrap{max-width:1180px;padding-bottom:40px}
+    .panes{
+      display:grid;
+      grid-template-columns:minmax(0,1.3fr) minmax(300px,0.7fr);
+      gap:28px;align-items:start;padding:0 24px;
+    }
+    .pane-right{
+      position:sticky;top:76px;
+      background:var(--panel);border:1px solid var(--line);border-radius:16px;
+      padding:14px 0 6px;max-height:calc(100vh - 104px);overflow-y:auto;
+    }
+    .panehead{padding:0 16px 10px}
+    .dialwrap{padding:0 0 18px}
+    /* month sits under the dial, both visible at once */
+    .cal{padding:4px 0 8px}
+    .calfoot{padding:10px 4px 0}
+    .list{margin-top:0}
+    .empty{border-top:0}
+    /* the dial has room to breathe now */
+    svg.dial{max-width:640px;margin:0 auto}
+  }
+  @media(min-width:1280px){
+    .wrap{max-width:1320px}
+    svg.dial{max-width:700px}
+  }
   header{
     display:flex;align-items:center;gap:12px;padding:14px 16px;
     position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);
@@ -45,13 +98,13 @@
   .datenav .d b{display:block;font-size:19px;font-weight:600}
   .datenav .d span{color:var(--muted);font-size:13px}
   .navbtn{background:var(--panel-2);border:0;color:var(--text);cursor:pointer;width:40px;height:40px;border-radius:50%;font-size:16px;flex:none}
-  .navbtn:hover{background:#2a333d}
+  .navbtn:hover{background:#3a4450}
   .dialwrap{padding:6px 16px 12px}
   svg.dial{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
-  .tick{stroke:#3d4650;stroke-width:1.2;stroke-linecap:round}
-  .tick.major{stroke:#8b97a4;stroke-width:2}
-  .hournum{fill:#c9d3dd;font-size:13px;font-weight:600;text-anchor:middle;dominant-baseline:central}
-  .hournum.q{fill:#eef4fa;font-size:15px;font-weight:700}
+  .tick{stroke:#454f5b;stroke-width:1.2;stroke-linecap:round}
+  .tick.major{stroke:#9aa7b4;stroke-width:2}
+  .hournum{fill:#cdd7e1;font-size:13px;font-weight:600;text-anchor:middle;dominant-baseline:central}
+  .hournum.q{fill:#f2f6fa;font-size:15px;font-weight:700}
   .sector{cursor:grab}
   .sector.dragging{cursor:grabbing}
   .sector .body{transition:fill-opacity .12s}
@@ -80,9 +133,9 @@
   .cell:hover .mini{transform:scale(1.08)}
   .cell.out{opacity:.4}
   .cell.sel{background:rgba(34,167,224,.16)}
-  .mnum{fill:#cfd9e3;font-size:13px;font-weight:600}
+  .mnum{fill:#d4dde6;font-size:13px;font-weight:600}
   .mnum.today{fill:var(--accent);font-weight:700}
-  .mnum.out{fill:#6a7783}
+  .mnum.out{fill:#78848f}
   .calfoot{display:flex;justify-content:space-between;align-items:center;padding:12px 16px 0;color:var(--muted);font-size:12.5px}
   .calfoot b{color:var(--text);font-weight:600}
   .list{margin-top:6px}
@@ -95,7 +148,7 @@
   .row .meta{flex:1;min-width:0}
   .row .meta b{display:block;font-weight:500;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .row .meta span{color:var(--muted);font-size:12.5px}
-  .row .meta span em{color:#b6c1cc;font-style:normal;font-weight:600;margin-right:6px}
+  .row .meta span em{color:#c2ccd6;font-style:normal;font-weight:600;margin-right:6px}
   .rep{color:var(--muted);font-size:12px;flex:none;opacity:.75}
   .kebab{color:var(--muted);font-size:18px;padding:0 4px;flex:none}
   .fab{
@@ -106,57 +159,106 @@
     box-shadow:0 6px 20px rgba(0,0,0,.45);z-index:30;
   }
   .fab:active{transform:scale(.94)}
+  @media(min-width:1060px){
+    .fab{
+      right:32px;
+      bottom:32px;
+    }
+  }
   .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;display:none;align-items:flex-end;justify-content:center}
   .scrim.open{display:flex}
   .sheet{
-    background:var(--panel);width:100%;max-width:520px;border-radius:20px 20px 0 0;
-    padding:20px 20px calc(24px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;
+    background:var(--panel);width:100%;max-width:min(520px,100vw);border-radius:20px 20px 0 0;
+    padding:20px 16px calc(24px + env(safe-area-inset-bottom));max-height:88vh;
+    overflow-y:auto;overflow-x:hidden;
   }
-  @media(min-width:560px){ .scrim{align-items:center} .sheet{border-radius:20px;max-height:84vh} }
+  /* every direct child may shrink; without this a wide row forces the sheet open */
+  .sheet > *{min-width:0;max-width:100%}
+  @media(min-width:560px){
+    .scrim{align-items:center}
+    .sheet{border-radius:20px;max-height:84vh;padding-left:20px;padding-right:20px}
+  }
+  /* Wide: the editor floats centered over both columns, wide enough that
+     the time row and the 12 swatches sit comfortably on one line each. */
+  @media(min-width:1060px){
+    .sheet{
+      max-width:620px;max-height:86vh;padding:24px;
+      box-shadow:0 24px 60px rgba(0,0,0,.55);
+      border:1px solid var(--line);
+    }
+    .scrim{background:rgba(0,0,0,.66)}
+  }
   .sheet h2{margin:0 0 16px;font-size:17px;font-weight:600}
   label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;font-weight:500}
-  input[type=text],input[type=time],input[type=number],input[type=password],input[type=date],select{
-    width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text);
-    border-radius:10px;padding:11px 12px;font-size:15px;font-family:inherit;
+  input[type=text],input[type=time],input[type=number],input[type=password],input[type=date],select,textarea{
+    width:100%;min-width:0;background:var(--panel-2);border:1px solid var(--line);color:var(--text);
+    border-radius:10px;padding:11px 10px;font-size:15px;font-family:inherit;
   }
-  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
-  .field{margin-bottom:14px}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-  .swatches{display:flex;gap:9px;flex-wrap:wrap}
-  .sw{width:34px;height:34px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}
-  .sw[aria-checked=true]{border-color:#fff;transform:scale(1.1)}
-  .actions{display:flex;gap:10px;margin-top:20px}
-  .btn{flex:1;padding:12px;border-radius:10px;border:0;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+  textarea{resize:vertical;min-height:56px;line-height:1.45}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+  .opt-tag{
+    color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;
+    font-size:11px;opacity:.8;
+  }
+  .rownote{
+    color:var(--muted);font-size:12px;margin-top:2px;
+    display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .field{margin-bottom:14px;min-width:0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .grid2 > *,.grid3 > *{min-width:0}
+  /* Ends is derived from Starts + Minutes, so it's the one to drop when space is tight */
+  @media(max-width:400px){
+    .grid3{grid-template-columns:1fr 1fr}
+    .grid3 .field.opt{grid-column:1 / -1}
+  }
+  /* 6 x 2 — fits an iPhone without wrapping raggedly, reads as a spectrum */
+  .swatches{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+  .sw{
+    aspect-ratio:1;width:100%;height:auto;border-radius:50%;border:2px solid transparent;
+    cursor:pointer;padding:0;min-width:0;transition:transform .1s;
+  }
+  .sw[aria-checked=true]{border-color:#fff;transform:scale(1.12)}
+  .actions{display:flex;gap:8px;margin-top:20px}
+  .btn{
+    flex:1 1 0;min-width:0;padding:12px 8px;border-radius:10px;border:0;
+    font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
   .btn.primary{background:var(--accent);color:#fff}
   .btn.ghost{background:var(--panel-2);color:var(--text)}
-  .btn.danger{background:rgba(232,50,74,.14);color:#ff6b7e;flex:none;padding:12px 16px}
+  .btn.danger{background:rgba(232,50,74,.14);color:#ff6b7e;flex:0 1 auto;padding:12px 14px}
   .hint{font-size:12px;color:var(--muted);line-height:1.5;margin:10px 0 0}
   .hint a{color:var(--accent)}
   .status{font-size:12px;color:var(--muted);padding:0 16px 8px;text-align:center;min-height:16px}
   .status.err{color:#ff6b7e}
   code{background:var(--panel-2);padding:1px 5px;border-radius:4px;font-size:12px}
-  .fieldset{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+  .fieldset{
+    border:1px solid var(--line);border-radius:12px;padding:14px 12px;margin-bottom:14px;
+    min-width:0;
+  }
   .fieldset legend{padding:0 6px;font-size:12px;color:var(--muted);font-weight:600}
   .freqs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
   .chip{
     background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
-    border-radius:999px;padding:7px 13px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;
+    border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;
   }
   .chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
-  .dows{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}
-  .dow{
-    background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
-    border-radius:8px;padding:9px 0;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;
-  }
   .dow[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
-  .radioline{display:flex;align-items:center;gap:9px;margin-bottom:9px;font-size:14px}
+  .radioline{display:flex;align-items:center;gap:9px;margin-bottom:9px;font-size:14px;flex-wrap:wrap}
   .radioline input[type=radio]{accent-color:var(--accent);width:17px;height:17px;flex:none;margin:0}
   .radioline label{margin:0;color:var(--text);font-size:14px;font-weight:400;white-space:nowrap}
-  .radioline input[type=number]{width:78px;flex:none}
-  .radioline input[type=date]{flex:1;min-width:0}
-  .inline{display:flex;align-items:center;gap:9px;font-size:14px}
-  .inline input[type=number]{width:70px;flex:none}
+  .radioline input[type=number]{width:72px;flex:none}
+  .radioline input[type=date]{flex:1 1 130px;min-width:0}
+  .inline{display:flex;align-items:center;gap:9px;font-size:14px;flex-wrap:wrap}
+  .inline input[type=number]{width:66px;flex:none}
+  .dows{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}
+  .dow{
+    background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
+    border-radius:8px;padding:9px 0;font-size:11.5px;font-weight:600;cursor:pointer;
+    font-family:inherit;text-align:center;min-width:0;overflow:hidden;
+  }
   .subtle{color:var(--muted);font-size:12.5px;margin:10px 0 0;line-height:1.5}
 </style>
 </head>
@@ -174,20 +276,30 @@
     <button class="navbtn" id="nextBtn" aria-label="Next">&#8250;</button>
   </div>
   <div class="status" id="status"></div>
-  <div id="dayView">
-    <div class="dialwrap">
-      <svg class="dial" id="dial" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div class="panes">
+    <!-- LEFT: dial, and on wide screens the month grid below it -->
+    <div class="pane-left">
+      <div id="dayView">
+        <div class="dialwrap">
+          <svg class="dial" id="dial" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+      </div>
+      <div id="monthView" hidden>
+        <div class="cal">
+          <div class="calhead" id="calHead"></div>
+          <div class="calgrid" id="calGrid"></div>
+        </div>
+        <div class="calfoot">
+          <span>Planned this month: <b id="mTotal">-</b></span>
+          <span><b id="mDays">-</b> days with activities</span>
+        </div>
+      </div>
     </div>
-    <div class="list" id="list"></div>
-  </div>
-  <div id="monthView" hidden>
-    <div class="cal">
-      <div class="calhead" id="calHead"></div>
-      <div class="calgrid" id="calGrid"></div>
-    </div>
-    <div class="calfoot">
-      <span>Planned this month: <b id="mTotal">-</b></span>
-      <span><b id="mDays">-</b> days with activities</span>
+
+    <!-- RIGHT: the day's activities -->
+    <div class="pane-right">
+      <div class="panehead" id="listHead" hidden>Activities</div>
+      <div class="list" id="list"></div>
     </div>
   </div>
 </div>
@@ -200,12 +312,16 @@
       <label for="fLabel">Name</label>
       <input type="text" id="fLabel" placeholder="Project work" autocomplete="off">
     </div>
+    <div class="field">
+      <label for="fNote">Description <span class="opt-tag">optional</span></label>
+      <textarea id="fNote" rows="2" placeholder="Anything worth remembering about this block"></textarea>
+    </div>
     <div class="grid3">
       <div class="field">
         <label for="fStart">Starts</label>
         <input type="time" id="fStart" step="300">
       </div>
-      <div class="field">
+      <div class="field opt">
         <label for="fEnd">Ends</label>
         <input type="time" id="fEnd" step="300">
       </div>
@@ -214,19 +330,17 @@
         <input type="number" id="fDur" min="5" max="1440" step="5" value="60">
       </div>
     </div>
-    <div class="grid2">
-      <div class="field">
-        <label for="fRing">Ring</label>
-        <select id="fRing">
-          <option value="0">Outer ring</option>
-          <option value="1">Middle ring</option>
-          <option value="2">Inner ring</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Color</label>
-        <div class="swatches" id="fColors"></div>
-      </div>
+    <div class="field">
+      <label for="fRing">Ring</label>
+      <select id="fRing">
+        <option value="0">Outer ring</option>
+        <option value="1">Middle ring</option>
+        <option value="2">Inner ring</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Color</label>
+      <div class="swatches" id="fColors"></div>
     </div>
     <fieldset class="fieldset">
       <legend>Repeat</legend>
@@ -325,15 +439,20 @@
 (function(){
 "use strict";
 
+/* 12 colors ordered around the wheel, so the swatch row reads as a spectrum.
+   The original 9 keep their exact hex values — existing activities never shift. */
 var PALETTE = [
   {name:"Cyan",   hex:"#22a7e0"},
-  {name:"Teal",   hex:"#3ddc97"},
-  {name:"Green",  hex:"#2fb344"},
-  {name:"Orange", hex:"#f2683c"},
-  {name:"Rust",   hex:"#b5533a"},
-  {name:"Amber",  hex:"#e8a33d"},
+  {name:"Blue",   hex:"#3d7ff2"},
   {name:"Violet", hex:"#8b6ee0"},
   {name:"Rose",   hex:"#e8437a"},
+  {name:"Red",    hex:"#e2483f"},
+  {name:"Rust",   hex:"#b5533a"},
+  {name:"Orange", hex:"#f2683c"},
+  {name:"Amber",  hex:"#e8a33d"},
+  {name:"Yellow", hex:"#d9c53f"},
+  {name:"Green",  hex:"#2fb344"},
+  {name:"Teal",   hex:"#3ddc97"},
   {name:"Slate",  hex:"#7b8b9a"}
 ];
 var CX=200, CY=200;
@@ -423,6 +542,7 @@ function eventsFor(date){
     out.push({
       id: ev.id, key: key,
       label: o.label !== undefined ? o.label : ev.label,
+      note: o.note !== undefined ? o.note : (ev.note||""),
       start: o.start !== undefined ? o.start : ev.start,
       durationMin: o.durationMin !== undefined ? o.durationMin : ev.durationMin,
       color: o.color !== undefined ? o.color : ev.color,
@@ -486,7 +606,7 @@ function renderDial(){
   var now=new Date(), showLive=isSameDay(state.viewDate,now);
   var nowMin=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
   var evs=eventsFor(state.viewDate), s=[];
-  s.push('<circle cx="200" cy="200" r="'+R_OUTER+'" fill="#0d1115" stroke="#232a32" stroke-width="1"/>');
+  s.push('<circle cx="200" cy="200" r="'+R_OUTER+'" fill="var(--bezel)" stroke="var(--bezel-edge)" stroke-width="1"/>');
   for(var i=0;i<96;i++){
     var ang=i*(360/96)-90, major=i%4===0;
     var o=polar(major?R_TICK_OUT+4:R_TICK_OUT,ang), n=polar(major?R_TICK_IN:R_TICK_IN+5,ang);
@@ -501,10 +621,10 @@ function renderDial(){
   for(var k=0;k<12;k++){
     var sa=k*30-90, a1p=polar(R_HUB+4,sa), a2p=polar(R_FACE-2,sa);
     s.push('<line x1="'+a1p[0].toFixed(1)+'" y1="'+a1p[1].toFixed(1)+'" x2="'+a2p[0].toFixed(1)+
-           '" y2="'+a2p[1].toFixed(1)+'" stroke="#161c22" stroke-width="1"/>');
+           '" y2="'+a2p[1].toFixed(1)+'" stroke="var(--spoke)" stroke-width="1"/>');
   }
   RINGS.forEach(function(r){
-    s.push('<circle cx="200" cy="200" r="'+r.out+'" fill="none" stroke="#141a20" stroke-width="1"/>');
+    s.push('<circle cx="200" cy="200" r="'+r.out+'" fill="none" stroke="var(--ring-guide)" stroke-width="1"/>');
   });
   evs.forEach(function(ev){
     var st=hmToMin(ev.start), du=Math.max(MIN_DUR,ev.durationMin);
@@ -539,7 +659,7 @@ function renderDial(){
   }
   var hubTime = showLive ? pad(now.getHours())+":"+pad(now.getMinutes()) : "--:--";
   var hubDate = state.viewDate.toLocaleDateString(undefined,{weekday:"short"}).toLowerCase()+" "+state.viewDate.getDate();
-  s.push('<circle cx="200" cy="200" r="'+R_HUB+'" fill="#0a0d10" stroke="#0a0d10" stroke-width="6"/>');
+  s.push('<circle cx="200" cy="200" r="'+R_HUB+'" fill="var(--dial)" stroke="var(--dial)" stroke-width="6"/>');
   s.push('<circle cx="200" cy="200" r="'+(R_HUB-4)+'" class="hubface"/>');
   s.push('<text class="hubtime" x="200" y="193">'+hubTime+'</text>');
   s.push('<text class="hubdate" x="200" y="212">'+esc(hubDate)+'</text>');
@@ -626,7 +746,9 @@ function renderList(){
       '<div class="badge" style="background:'+ev.color+';color:'+contrastOn(ev.color)+'">'+
         esc(ev.label.trim().charAt(0).toUpperCase()||"?")+'</div>'+
       '<div class="meta"><b>'+esc(ev.label)+'</b>'+
-        '<span><em>'+fmtDur(ev.durationMin)+'</em>'+esc(ev.start)+' \u2014 '+esc(minToHM(en))+'</span></div>'+
+        '<span><em>'+fmtDur(ev.durationMin)+'</em>'+esc(ev.start)+' \u2014 '+esc(minToHM(en))+'</span>'+
+        (ev.note ? '<div class="rownote">'+esc(ev.note)+'</div>' : '')+
+      '</div>'+
       (ev.repeats ? '<div class="rep" title="Repeating">&#8635;</div>' : '')+
       '<div class="kebab">&#8942;</div>'+
     '</div>';
@@ -635,7 +757,9 @@ function renderList(){
 
 function renderHeader(){
   var now=new Date();
-  if(state.view==="month"){
+  // On wide screens the dial and month are both showing, so the heading
+  // names the open day and the arrows step days.
+  if(state.view==="month" && !isWide()){
     document.getElementById("dLong").textContent =
       state.calMonth.toLocaleDateString(undefined,{month:"long",year:"numeric"});
     document.getElementById("dWeek").textContent = "Tap a day to open it";
@@ -647,13 +771,23 @@ function renderHeader(){
     document.getElementById("dWeek").textContent = isSameDay(d,now) ? wk+" \u00b7 Today" : wk;
   }
 }
+/* Wide screens show the dial and the month together in the left column,
+   so the day/month toggle only governs narrow layouts. */
+function isWide(){ return window.matchMedia("(min-width:1060px)").matches; }
+
 function render(){
+  var wide = isWide();
   var m = state.view==="month";
-  document.getElementById("dayView").hidden = m;
-  document.getElementById("monthView").hidden = !m;
-  document.getElementById("viewBtn").classList.toggle("on", m);
+  // wide: both panes always on. narrow: one at a time.
+  document.getElementById("dayView").hidden   = wide ? false : m;
+  document.getElementById("monthView").hidden = wide ? false : !m;
+  document.getElementById("listHead").hidden  = !wide;
+  document.getElementById("viewBtn").hidden   = wide;
+  document.getElementById("viewBtn").classList.toggle("on", m && !wide);
   renderHeader();
-  if(m) renderMonth(); else { renderDial(); renderList(); }
+  renderDial();
+  renderMonth();
+  renderList();
 }
 
 function svgPoint(evt){
@@ -883,6 +1017,7 @@ function openEvent(id){
   document.getElementById("evDelete").hidden = !base;
   if(base && occ){
     document.getElementById("fLabel").value = occ.label;
+    document.getElementById("fNote").value  = occ.note||"";
     document.getElementById("fStart").value = occ.start;
     document.getElementById("fEnd").value   = minToHM(hmToMin(occ.start)+occ.durationMin);
     document.getElementById("fDur").value   = occ.durationMin;
@@ -901,6 +1036,7 @@ function openEvent(id){
   } else {
     var n=new Date(), m=snap(n.getHours()*60+n.getMinutes());
     document.getElementById("fLabel").value="";
+    document.getElementById("fNote").value="";
     document.getElementById("fStart").value=minToHM(m);
     document.getElementById("fEnd").value=minToHM(m+60);
     document.getElementById("fDur").value=60;
@@ -920,6 +1056,7 @@ function openEvent(id){
 }
 function saveEvent(){
   var label=document.getElementById("fLabel").value.trim();
+  var note=document.getElementById("fNote").value.trim();
   var start=document.getElementById("fStart").value;
   var dur=parseInt(document.getElementById("fDur").value,10);
   var ring=parseInt(document.getElementById("fRing").value,10)||0;
@@ -932,11 +1069,11 @@ function saveEvent(){
   var rule=readRule();
   if(state.editing){
     var base=baseEvent(state.editing);
-    base.label=label; base.start=start; base.durationMin=dur; base.color=chosenColor; base.ring=ring;
+    base.label=label; base.note=note; base.start=start; base.durationMin=dur; base.color=chosenColor; base.ring=ring;
     base.rule=rule;
     base.overrides={};
   } else {
-    state.events.push({ id:uid(), label:label, start:start, durationMin:dur,
+    state.events.push({ id:uid(), label:label, note:note, start:start, durationMin:dur,
                         color:chosenColor, ring:ring, rule:rule, exdates:[], overrides:{} });
   }
   if(rule.freq!=="none" && rule.from) state.viewDate = parseKey(rule.from);
@@ -985,16 +1122,24 @@ function init(){
     if(state.view==="month") state.calMonth=new Date(state.viewDate.getFullYear(), state.viewDate.getMonth(), 1);
     render();
   };
-  document.getElementById("prevBtn").onclick=function(){
-    if(state.view==="month") state.calMonth=addMonths(state.calMonth,-1);
-    else state.viewDate=addDays(state.viewDate,-1);
+  document.getElementById("prevBtn").onclick=function(){ step(-1); };
+  document.getElementById("nextBtn").onclick=function(){ step(1); };
+  function step(n){
+    // wide screens always show the dial, so the arrows move days there
+    if(state.view==="month" && !isWide()){
+      state.calMonth=addMonths(state.calMonth,n);
+    } else {
+      state.viewDate=addDays(state.viewDate,n);
+      // keep the month grid following the open day
+      state.calMonth=new Date(state.viewDate.getFullYear(), state.viewDate.getMonth(), 1);
+    }
     state.selected=null; render();
-  };
-  document.getElementById("nextBtn").onclick=function(){
-    if(state.view==="month") state.calMonth=addMonths(state.calMonth,1);
-    else state.viewDate=addDays(state.viewDate,1);
-    state.selected=null; render();
-  };
+  }
+  // regroup panes when rotating an iPad or resizing a window
+  var mq = window.matchMedia("(min-width:1060px)");
+  var onBP = function(){ render(); };
+  if(mq.addEventListener) mq.addEventListener("change", onBP);
+  else if(mq.addListener) mq.addListener(onBP);
   document.getElementById("todayJump").onclick=function(){
     state.viewDate=startOfToday();
     state.calMonth=new Date(state.viewDate.getFullYear(), state.viewDate.getMonth(), 1);
@@ -1005,7 +1150,9 @@ function init(){
   document.getElementById("calGrid").addEventListener("click",function(e){
     var c=e.target.closest(".cell"); if(!c) return;
     state.viewDate=parseKey(c.dataset.key);
-    state.view="day";
+    // narrow: jump to the dial. wide: it's already beside the calendar.
+    if(!isWide()) state.view="day";
+    state.selected=null;
     render();
   });
   document.getElementById("fFreq").addEventListener("click",function(e){
