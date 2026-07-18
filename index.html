@@ -15,7 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rationale&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Rationale&display=swap" rel="stylesheet">
 <style>
   :root{
     /* Depth ladder — each surface is measurably lighter than the one behind it:
@@ -33,7 +33,8 @@
   html,body{margin:0;padding:0}
   body{
     background:var(--bg);color:var(--text);
-    font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    font-family:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    font-optical-sizing:auto;
     font-size:15px;line-height:1.4;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
@@ -127,7 +128,7 @@
   .navbtn{background:var(--panel-2);border:0;color:var(--text);cursor:pointer;width:40px;height:40px;border-radius:50%;font-size:16px;flex:none}
   .navbtn:hover{background:#3a4450}
   .dialwrap{padding:6px 16px 12px}
-  svg.dial{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+  svg.dial{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;font-family:"Inter",ui-sans-serif,sans-serif}
   .tick{stroke:#454f5b;stroke-width:1.2;stroke-linecap:round}
   .tick.major{stroke:#9aa7b4;stroke-width:2}
   .tick.major.t2{stroke:#b3bec9;stroke-width:2.2}
@@ -145,14 +146,14 @@
   .sector.sel .body{stroke:#fff;stroke-width:2}
   .handle{cursor:ew-resize;fill:#fff;fill-opacity:0;stroke:#fff;stroke-opacity:0;stroke-width:2;transition:fill-opacity .12s,stroke-opacity .12s}
   .sector:hover .handle,.sector.sel .handle{fill-opacity:.95;stroke-opacity:.5}
-  .seclabel{font-size:10.5px;font-weight:600;letter-spacing:.3px;pointer-events:none}
-  .sectime{font-size:8px;font-weight:600;opacity:.92;pointer-events:none}
+  .seclabel{font-family:"Inter",ui-sans-serif,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.3px;pointer-events:none}
+  .sectime{font-family:"Inter",ui-sans-serif,sans-serif;font-size:8px;font-weight:600;opacity:.92;pointer-events:none}
   .hubface{fill:var(--accent)}
-  .hubtime{fill:#fff;font-size:21px;font-weight:700;text-anchor:middle;dominant-baseline:central;letter-spacing:.5px}
-  .hubdate{fill:rgba(255,255,255,.85);font-size:10.5px;font-weight:500;text-anchor:middle;dominant-baseline:central}
+  .hubtime{font-family:"Rationale",ui-sans-serif,sans-serif;fill:#fff;font-size:23px;font-weight:400;text-anchor:middle;dominant-baseline:central;letter-spacing:.5px}
+  .hubdate{font-family:"Rationale",ui-sans-serif,sans-serif;fill:rgba(255,255,255,.85);font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:central}
   .nowhand{stroke:var(--now);stroke-width:3;stroke-linecap:round;pointer-events:none}
   .nowdot{fill:var(--now);pointer-events:none}
-  .ghosttip{fill:#fff;font-size:11px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+  .ghosttip{font-family:"Inter",ui-sans-serif,sans-serif;fill:#fff;font-size:11px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
   .ghostbg{fill:#000;fill-opacity:.72;pointer-events:none}
   .cal{padding:4px 12px 12px}
   .calhead{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
@@ -166,8 +167,8 @@
   .cell:hover .mini{transform:scale(1.08)}
   .cell.out{opacity:.4}
   .cell.sel{background:rgba(34,167,224,.16)}
-  .mnum{fill:#d4dde6;font-size:13px;font-weight:600}
-  .mnum.today{fill:var(--accent);font-weight:700}
+  .mnum{font-family:"Rationale",ui-sans-serif,sans-serif;fill:#d4dde6;font-size:15px;font-weight:400}
+  .mnum.today{fill:var(--accent);font-weight:400}
   .mnum.out{fill:#78848f}
   .calfoot{display:flex;justify-content:space-between;align-items:center;padding:12px 16px 0;color:var(--muted);font-size:12.5px}
   .calfoot b{color:var(--text);font-weight:600}
